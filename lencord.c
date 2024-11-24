@@ -22,18 +22,14 @@ typedef struct {
 } DynamicArray;
 
 size_t ParseMessages(char *Messages, char *ResponseBuffer) {
-    // TODO: do shit
-    return 1;
+    strcpy(Messages, ResponseBuffer);
+    return 0;
 }
 
 size_t Callback(char *ReceivedData, size_t Size, size_t nmemb, void *ResponseBufferVoid) {
     size_t RealSize = Size * nmemb;
     char *ResponseBuffer = (char *)ResponseBufferVoid;
-    size_t ResponseBufferEnd = strlen(ResponseBuffer);
-    size_t ReceivedDataSize = strlen(ReceivedData);
-    for (size_t i = 0; i < RealSize; ++i) {
-        ResponseBuffer[ResponseBufferEnd + i] = ReceivedData[i];
-    }
+    strcat(ResponseBuffer, ReceivedData);
     return RealSize;
 }
 
@@ -73,6 +69,7 @@ size_t UpdateMessages(char *ChannelId, char *Token, char *Messages, char *Respon
         nob_log(ERROR, "ParseMessages returned non-zero");
         return 1;
     }
+    Messages = strcpy(Messages, "ur;mom;is;gay;");
     return 0;
 }
 
@@ -100,6 +97,7 @@ int main()
 
     while (!WindowShouldClose())
     {
+        
         BeginDrawing();
         ClearBackground(BG_COLOR);
         const Rectangle ListViewRect = {0, 0, WIDTH, (size_t) (HEIGHT * 0.9)};
@@ -115,7 +113,8 @@ int main()
         };
         int Active = -1;
         GuiListView(ListViewRect, Messages, 0, &Active);        
-        
+        ResponseBuffer = calloc(RESPONSE_BUFFER_SIZE, 1);
+        Messages = calloc(MESSAGE_BUFFER_SIZE, 1);
         EndDrawing();
     }
 
