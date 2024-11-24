@@ -13,6 +13,7 @@
 #define BG_COLOR (Color) { 0x20, 0x20, 0x20, 0xff }
 #define TEXT_COLOR (Color) { 0x80, 0x80, 0x80, 0xff}
 #define RESPONSE_BUFFER_SIZE 128000
+#define MESSAGE_BUFFER_SIZE 64000
 
 typedef struct {
     char **items;
@@ -20,11 +21,9 @@ typedef struct {
     size_t capacity;
 } DynamicArray;
 
-void UpdateMessages(char *Messages) {
-    const char *New = "Lena: Hi;Urmom: Hi;Goon: Hi";
-    const size_t NewSize = strlen(New);
-    Messages = realloc(Messages, NewSize);
-    strcpy(Messages, New);
+size_t ParseMessages(char *Messages, char *ResponseBuffer) {
+    // TODO: do shit
+    return 1;
 }
 
 size_t Callback(char *ReceivedData, size_t Size, size_t nmemb, void *ResponseBufferVoid) {
@@ -48,7 +47,6 @@ size_t GetMessages(char *ChannelId, char *Token, char* ResponseBuffer) {
     char *Auth = malloc(sizeof(char) * 0xff);
     sprintf(Address, "https://discord.com/api/v10/channels/%s/messages", ChannelId);
     sprintf(Auth, "Authorization: %s", Token);
-    nob_log(INFO, "%s", Address);
     Headers = curl_slist_append(Headers, Auth);
     curl_easy_setopt(Curl, CURLOPT_URL, Address);
     curl_easy_setopt(Curl, CURLOPT_HTTPHEADER, Headers);
@@ -64,10 +62,24 @@ size_t GetMessages(char *ChannelId, char *Token, char* ResponseBuffer) {
     return 0;
 }
 
+size_t UpdateMessages(char *ChannelId, char *Token, char *Messages, char *ResponseBuffer) {
+    if (GetMessages(ChannelId, Token, ResponseBuffer)) {
+        nob_log(ERROR, "GetMessages returned non-zero");
+        return 1;
+    }
+    if (ParseMessages(Messages, ResponseBuffer)) {
+        nob_log(ERROR, "ParseMessages returned non-zero");
+        return 1;
+    }
+    return 0;
+}
+
 int main()
 {
     char *ResponseBuffer = malloc(RESPONSE_BUFFER_SIZE);
+    char *Messages = malloc(MESSAGE_BUFFER_SIZE);
 
+    // Read token file    
     String_Builder StringBuilder = {0};
     const char *TokenFilePath = "token";
     read_entire_file(TokenFilePath, &StringBuilder);
@@ -76,28 +88,29 @@ int main()
     sprintf(Token, SV_Fmt, SV_Arg(StringView));
 
     char *DoccordGeneral = "834799816977416198";
-    if (GetMessages(DoccordGeneral, Token, ResponseBuffer)) {
-        nob_log(ERROR, "GetMessages returned non-zero");
-        return 1;
-    }
-    nob_log(INFO, "%s", ResponseBuffer);
-    return 0;
 
     InitWindow(WIDTH, HEIGHT, TITLE);
     const char *FontFile = "./Iosevka-Regular.ttf";
     Font MainFont = LoadFont(FontFile);
     GuiSetStyle(DEFAULT, TEXT_SIZE, FONT_HEIGHT);
     GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, ColorToInt(TEXT_COLOR));
-    GuiSetFont(MainFont);
-
-    char *Messages = malloc(sizeof(char) * 0xff);
+    GuiSetFont(MainFont);    
 
     while (!WindowShouldClose())
     {
         BeginDrawing();
         ClearBackground(BG_COLOR);
         const Rectangle ListViewRect = {0, 0, WIDTH, (size_t) (HEIGHT * 0.9)};
-        UpdateMessages(Messages);
+        if (UpdateMessages(DoccordGeneral, Token, Messages, ResponseBuffer)) {
+            nob_log(ERROR, "UpdateMessages returned non-zero");
+            free(Messages);
+            free(ResponseBuffer);
+            free(Token);
+            EndDrawing();
+            UnloadFont(MainFont);
+            CloseWindow();
+            return 1;
+        };
         int Active = -1;
         GuiListView(ListViewRect, Messages, 0, &Active);        
         
