@@ -59,6 +59,8 @@ size_t GetMessages(char *ChannelId, char *Token, char* ResponseBuffer) {
     }
     curl_slist_free_all(Headers);
     curl_easy_cleanup(Curl);
+    free(Address);
+    free(Auth);
     return 0;
 }
 
