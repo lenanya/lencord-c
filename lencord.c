@@ -117,6 +117,9 @@ int main()
         EndDrawing();
     }
 
+    free(Messages);
+    free(ResponseBuffer);
+    free(Token);
     UnloadFont(MainFont);
     CloseWindow();
 
