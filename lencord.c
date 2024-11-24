@@ -5,6 +5,7 @@
 #define RAYGUI_IMPLEMENTATION
 #include <raygui.h>
 #include <curl/curl.h>
+#include <cjson/cJSON.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -22,7 +23,25 @@ typedef struct {
 } DynamicArray;
 
 size_t ParseMessages(char *Messages, char *ResponseBuffer) {
-    strcpy(Messages, ResponseBuffer);
+    cJSON *MessagesJson = cJSON_Parse((ResponseBuffer));
+    cJSON *ArrayZero = cJSON_GetArrayItem(MessagesJson, 1);
+    cJSON *content = NULL;
+    content = cJSON_GetObjectItemCaseSensitive(ArrayZero, "content");
+    nob_log(INFO, "%s", content->valuestring);
+
+
+    //const cJSON *ContentJson = NULL;
+    //const cJSON *MessageJson = NULL;
+    //cJSON_ArrayForEach(MessageJson, MessagesJson) {
+    //    nob_log(INFO, "reached array loop");
+    //    ContentJson = cJSON_GetObjectItemCaseSensitive(MessageJson, "content");
+    //    if (cJSON_IsString(ContentJson) && (ContentJson->valuestring != NULL)) {
+    //        nob_log(INFO, ContentJson->valuestring);
+    //    } else {
+    //        nob_log(ERROR, "oh man");
+    //    } 
+    //}
+     
     return 0;
 }
 
