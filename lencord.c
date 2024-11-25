@@ -23,24 +23,26 @@ typedef struct {
 } DynamicArray;
 
 size_t ParseMessages(char *Messages, char *ResponseBuffer) {
-    cJSON *MessagesJson = cJSON_Parse((ResponseBuffer));
-    cJSON *ArrayZero = cJSON_GetArrayItem(MessagesJson, 1);
-    cJSON *content = NULL;
-    content = cJSON_GetObjectItemCaseSensitive(ArrayZero, "content");
-    nob_log(INFO, "%s", content->valuestring);
-
-
-    //const cJSON *ContentJson = NULL;
-    //const cJSON *MessageJson = NULL;
-    //cJSON_ArrayForEach(MessageJson, MessagesJson) {
-    //    nob_log(INFO, "reached array loop");
-    //    ContentJson = cJSON_GetObjectItemCaseSensitive(MessageJson, "content");
-    //    if (cJSON_IsString(ContentJson) && (ContentJson->valuestring != NULL)) {
-    //        nob_log(INFO, ContentJson->valuestring);
-    //    } else {
-    //        nob_log(ERROR, "oh man");
-    //    } 
-    //}
+    char *Temp = malloc(RESPONSE_BUFFER_SIZE);
+    Temp = strcpy(Temp, "{\"messages\":");
+    Temp = strcat(Temp, ResponseBuffer);
+    Temp = strcat(Temp, "}");
+    cJSON *ResponseJson = cJSON_Parse(Temp);
+    cJSON *MessagesJson = cJSON_GetObjectItem(ResponseJson, "messages");
+    char *Printer = cJSON_Print(ResponseJson);
+    nob_log(INFO, "%s", Printer);
+    return 1;
+    const cJSON *ContentJson = NULL;
+    const cJSON *MessageJson = NULL;
+    cJSON_ArrayForEach(MessageJson, MessagesJson) {
+        nob_log(INFO, "reached array loop");
+        ContentJson = cJSON_GetObjectItemCaseSensitive(MessageJson, "content");
+        if (cJSON_IsString(ContentJson) && (ContentJson->valuestring != NULL)) {
+            nob_log(INFO, ContentJson->valuestring);
+        } else {
+            nob_log(ERROR, "oh man");
+        } 
+    }
      
     return 0;
 }
