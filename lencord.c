@@ -31,7 +31,7 @@ size_t ParseMessages(char *Messages, char *ResponseBuffer) {
     cJSON *MessagesJson = cJSON_GetObjectItem(ResponseJson, "messages");
     char *Printer = cJSON_Print(ResponseJson);
     nob_log(INFO, "%s", Printer);
-    return 1;
+    return 0;
     const cJSON *ContentJson = NULL;
     const cJSON *MessageJson = NULL;
     cJSON_ArrayForEach(MessageJson, MessagesJson) {
