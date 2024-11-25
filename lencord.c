@@ -17,21 +17,21 @@
 #define MESSAGE_BUFFER_SIZE 64000
 
 typedef struct {
-    char **items;
+    unsigned char **items;
     size_t count;
     size_t capacity;
 } DynamicArray;
 
-size_t ParseMessages(char *Messages, char *ResponseBuffer) {
-    char *Temp = malloc(RESPONSE_BUFFER_SIZE);
+size_t ParseMessages(unsigned char *Messages, unsigned char *ResponseBuffer) {
+    unsigned char *Temp = malloc(RESPONSE_BUFFER_SIZE);
     Temp = strcpy(Temp, "{\"messages\":");
     Temp = strcat(Temp, ResponseBuffer);
     Temp = strcat(Temp, "}");
     cJSON *ResponseJson = cJSON_Parse(Temp);
     cJSON *MessagesJson = cJSON_GetObjectItem(ResponseJson, "messages");
-    char *Printer = cJSON_Print(ResponseJson);
+    unsigned char *Printer = cJSON_Print(ResponseJson);
     nob_log(INFO, "%s", Printer);
-    return 0;
+    //return 0;
     const cJSON *ContentJson = NULL;
     const cJSON *MessageJson = NULL;
     cJSON_ArrayForEach(MessageJson, MessagesJson) {
@@ -43,25 +43,25 @@ size_t ParseMessages(char *Messages, char *ResponseBuffer) {
             nob_log(ERROR, "oh man");
         } 
     }
-     
+    free(Temp);
     return 0;
 }
 
-size_t Callback(char *ReceivedData, size_t Size, size_t nmemb, void *ResponseBufferVoid) {
+size_t Callback(unsigned char *ReceivedData, size_t Size, size_t nmemb, void *ResponseBufferVoid) {
     size_t RealSize = Size * nmemb;
-    char *ResponseBuffer = (char *)ResponseBufferVoid;
+    unsigned char *ResponseBuffer = (unsigned char *)ResponseBufferVoid;
     strcat(ResponseBuffer, ReceivedData);
     return RealSize;
 }
 
-size_t GetMessages(char *ChannelId, char *Token, char* ResponseBuffer) {
+size_t GetMessages(unsigned char *ChannelId, unsigned char *Token, unsigned char* ResponseBuffer) {
     CURL *Curl;
     Curl = curl_easy_init();
     if (!Curl) return 1;
     CURLcode ResponseCode;
     struct curl_slist *Headers = NULL;
-    char *Address = malloc(sizeof(char) * 0xff);
-    char *Auth = malloc(sizeof(char) * 0xff);
+    unsigned char *Address = malloc(sizeof(unsigned char) * 0xff);
+    unsigned char *Auth = malloc(sizeof(unsigned char) * 0xff);
     sprintf(Address, "https://discord.com/api/v10/channels/%s/messages", ChannelId);
     sprintf(Auth, "Authorization: %s", Token);
     Headers = curl_slist_append(Headers, Auth);
@@ -81,7 +81,7 @@ size_t GetMessages(char *ChannelId, char *Token, char* ResponseBuffer) {
     return 0;
 }
 
-size_t UpdateMessages(char *ChannelId, char *Token, char *Messages, char *ResponseBuffer) {
+size_t UpdateMessages(unsigned char *ChannelId, unsigned char *Token, unsigned char *Messages, unsigned char *ResponseBuffer) {
     if (GetMessages(ChannelId, Token, ResponseBuffer)) {
         nob_log(ERROR, "GetMessages returned non-zero");
         return 1;
@@ -96,21 +96,21 @@ size_t UpdateMessages(char *ChannelId, char *Token, char *Messages, char *Respon
 
 int main()
 {
-    char *ResponseBuffer = malloc(RESPONSE_BUFFER_SIZE);
-    char *Messages = malloc(MESSAGE_BUFFER_SIZE);
+    unsigned char *ResponseBuffer = malloc(RESPONSE_BUFFER_SIZE);
+    unsigned char *Messages = malloc(MESSAGE_BUFFER_SIZE);
 
     // Read token file    
     String_Builder StringBuilder = {0};
-    const char *TokenFilePath = "token";
+    const unsigned char *TokenFilePath = "token";
     read_entire_file(TokenFilePath, &StringBuilder);
     String_View StringView = sb_to_sv(StringBuilder);
-    char *Token = malloc(128);
+    unsigned char *Token = malloc(128);
     sprintf(Token, SV_Fmt, SV_Arg(StringView));
 
-    char *DoccordGeneral = "834799816977416198";
+    unsigned char *DoccordGeneral = "834799816977416198";
 
     InitWindow(WIDTH, HEIGHT, TITLE);
-    const char *FontFile = "./Iosevka-Regular.ttf";
+    const unsigned char *FontFile = "./Iosevka-Regular.ttf";
     Font MainFont = LoadFont(FontFile);
     GuiSetStyle(DEFAULT, TEXT_SIZE, FONT_HEIGHT);
     GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL, ColorToInt(TEXT_COLOR));
